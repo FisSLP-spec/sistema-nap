@@ -37,7 +37,7 @@ db.serialize(() => {
     stmt.run("53901573", "SIN ANTECEDENTES Loredo Flores Rafael", "Vigencia 07/10/2026");
     stmt.run("53901579", "SIN ANTECEDENTES Escalante Morales Juan Rafael", "Vigencia 07/10/2026");
     stmt.run("34300143", "SIN ANTECEDENTES Sandoval Treviño Leslie Guadalupe", "Vigencia 07/10/2026");
-    stmt.run("34300143", "SIN ANTECEDENTES Larrañaga Chequer Patricia", "Vigencia 27/07/2026");
+    stmt.run("34300634", "SIN ANTECEDENTES Larrañaga Chequer Patricia", "Vigencia 27/07/2026");
     stmt.run("1014", "Jorge Alberto Morales", "En Revisión");
     stmt.run("1015", "Claudia Verónica Silva", "VÁLIDO");
     stmt.run("1016", "Mauricio Javier Ortega", "VÁLIDO");
