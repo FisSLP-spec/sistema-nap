@@ -115,7 +115,7 @@ app.get('/api/reporte/excel', (req, res) => {
     });
 });
 
-// PDF INDIVIDUAL (Código corregido sin errores de sintaxis)
+// PDF INDIVIDUAL - CORREGIDO COMPLETAMENTE SIN COMA SUELTA
 app.get('/api/reporte/pdf', (req, res) => {
     const folioBuscado = req.query.folio ? req.query.folio.trim().toUpperCase() : '';
 
@@ -129,6 +129,7 @@ app.get('/api/reporte/pdf', (req, res) => {
         doc.pipe(res);
 
         try {
+            // Dibujamos la imagen de forma directa y segura usando solo el ancho
             doc.image(path.join(__dirname, 'mi_logotipo.png'), { width: 180 });
             doc.moveDown(2);
         } catch (e) {
