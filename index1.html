@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema Personalizado con Imagen</title>
+    
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #809da1 !important; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .tarjeta {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+        }
+        .logotipo {
+            width: 360px;       
+            height: auto;       
+            margin-bottom: 15px;
+            border-radius: 8px; 
+        }
+        h2 {
+            color: #0f172a;
+            margin-bottom: 5px;
+        }
+        p {
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
+        input {
+            padding: 12px;
+            font-size: 16px;
+            width: 100%;
+            box-sizing: border-box;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            outline: none;
+        }
+        .contenedor-botones {
+            display: flex;
+            gap: 10px;
+        }
+        button {
+            flex: 1;
+            padding: 12px;
+            font-size: 15px;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .btn-verificar {
+            background-color: #4e6d8f !important; 
+            color: white;
+        }
+        .btn-verificar:hover {
+            background-color: #4338ca !important;
+        }
+
+        .btn-limpiar {
+            background-color: #f1f5f9;
+            color: #0f172a;
+        }
+        .btn-limpiar:hover {
+            background-color: #e2e8f0;
+        }
+        #mensaje {
+            margin-top: 25px;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 15px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="tarjeta">
+        <img src="mi_logotipo.png" alt="Logotipo de la empresa" class="logotipo">
+        
+        <h2>CONSTANCIA DE ANTECEDENTES PENALES</h2>
+        <p>Ingrese el Folio para consultar la información</p>
+        
+        <input type="text" id="codigoUsuario" placeholder="Ej. FOLIO101">
+        
+        <div class="contenedor-botones">
+            <button class="btn-verificar" onclick="comprobar()">Verificar</button>
+            <button class="btn-limpiar" onclick="limpiarPantalla()">Limpiar</button>
+        </div>
+        
+        <div id="mensaje"></div>
+    </div>
+
+    <script>
+        // 1. Esto detecta la tecla Enter
+        document.getElementById("codigoUsuario").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault(); 
+                comprobar();            
+            }
+        });
+
+        // 2. Esta función le pregunta a tu servidor Node.js
+        async function consultarBaseDeDatos(folio) {
+            const MODO_PRUEBAS = false; // ¡Desactivado para usar el servidor real!
+
+            if (MODO_PRUEBAS) {
+                const diccionarioCodigos = {
+                    "53901519": { valido: true, html: "✓ VÁLIDO<br><b>Usuario:</b> SIN ANTECEDENTES<br><b>ID:</b> supervisor ejecutivo" },
+                    "FOLIO102": { valido: true, html: "✓ VÁLIDO<br><b>Usuario:</b> María Gómez<br><b>Estado:</b> En Revisión" }
+                };
+                return diccionarioCodigos[folio] || { valido: false, html: "✗ Código incorrecto o no registrado." };
+            } else {
+                try {
+                    // Llama a tu servidor local en el puerto 3000
+                    const respuesta = await fetch(`http://localhost:3000/api/verificar?folio=${folio}`);
+                    if (!respuesta.ok) throw new Error("Error en el servidor");
+                    return await respuesta.json(); 
+                } catch (error) {
+                    return { valido: false, html: "✗ Error de conexión con el servidor. ¿Está encendido?" };
+                }
+            }
+        }
+
+        async function comprobar() {
+            const textoEscrito = document.getElementById("codigoUsuario").value.trim().toUpperCase();
+            const cajaMensaje = document.getElementById("mensaje");
+
+            if (textoEscrito === "") {
+                cajaMensaje.style.display = "block";
+                cajaMensaje.style.backgroundColor = "#fee2e2";
+                cajaMensaje.style.color = "#991b1b";
+                cajaMensaje.innerHTML = "Por favor, escribe un código primero.";
+                return;
+            }
+
+            cajaMensaje.style.display = "block";
+            cajaMensaje.style.backgroundColor = "#f1f5f9";
+            cajaMensaje.style.color = "#0f172a";
+            cajaMensaje.innerHTML = "Buscando en el sistema...";
+
+            const resultado = await consultarBaseDeDatos(textoEscrito);
+
+            if (resultado.valido) {
+                cajaMensaje.style.backgroundColor = "#dcfce7";
+                cajaMensaje.style.color = "#166534";
+                cajaMensaje.innerHTML = resultado.html;
+            } else {
+                cajaMensaje.style.backgroundColor = "#fee2e2";
+                cajaMensaje.style.color = "#991b1b";
+                cajaMensaje.innerHTML = resultado.html;
+            }
+        }
+
+        function limpiarPantalla() {
+            document.getElementById("codigoUsuario").value = "";
+            const cajaMensaje = document.getElementById("mensaje");
+            cajaMensaje.innerHTML = "";
+            cajaMensaje.style.display = "none";
+        }
+    </script>
+
+</body>
+</html>
