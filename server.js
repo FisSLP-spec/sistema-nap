@@ -54,7 +54,7 @@ app.get('/', (req, res) => {
 
 // 3. Crear la ruta para verificar los folios
 app.get('/api/verificar', (req, res) => {
-    const folioBuscado = req.query.folio ? req.query.folio.trim() : '';
+    const folioBuscado = req.query.folio ? req.query.folio.trim().toUpperCase() : '';
 
     db.get(`SELECT * FROM constancias WHERE folio = ?`, [folioBuscado], (err, row) => {
         if (err) {
@@ -75,9 +75,9 @@ app.get('/api/verificar', (req, res) => {
     });
 });
 
-// 👇 EXCEL MODIFICADO: SOLO UN FOLIO CON IMAGEN 👇
+// EXCEL MODIFICADO: BÚSQUEDA CORREGIDA CON MAYÚSCULAS
 app.get('/api/reporte/excel', (req, res) => {
-    const folioBuscado = req.query.folio ? req.query.folio.trim() : '';
+    const folioBuscado = req.query.folio ? req.query.folio.trim().toUpperCase() : '';
 
     db.get(`SELECT * FROM constancias WHERE folio = ?`, [folioBuscado], async (err, row) => {
         if (err || !row) return res.status(404).send("Folio no encontrado para el reporte");
@@ -85,22 +85,19 @@ app.get('/api/reporte/excel', (req, res) => {
         const workbook = new ExcelJS.Workbook();
         const worksheet = workbook.addWorksheet('Constancia');
 
-        // Agregar Imagen si existe en el servidor
         try {
             const imageId = workbook.addImage({
                 filename: path.join(__dirname, 'mi_logotipo.png'),
                 extension: 'png',
             });
-            worksheet.addImage(imageId, 'B2:D4'); // Posición de la imagen
+            worksheet.addImage(imageId, 'B2:D4'); 
         } catch (e) {
             console.log("No se pudo cargar la imagen en Excel, continuando sin ella.");
         }
 
-        // Espacio para la imagen y el título
         worksheet.getCell('B6').value = 'REPORTE DE CONSTANCIA INDIVIDUAL';
         worksheet.getCell('B6').font = { bold: true, size: 14 };
 
-        // Estructura de la tabla de datos
         worksheet.columns = [
             { header: '', key: 'vacio', width: 5 },
             { header: 'Folio', key: 'folio', width: 15 },
@@ -108,7 +105,6 @@ app.get('/api/reporte/excel', (req, res) => {
             { header: 'Estado / Vigencia', key: 'estado', width: 30 }
         ];
 
-        // Añadir la fila con los datos del folio buscado
         worksheet.addRow({ folio: row.folio, usuario: row.usuario, estado: row.estado });
 
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
@@ -119,9 +115,9 @@ app.get('/api/reporte/excel', (req, res) => {
     });
 });
 
-// 👇 PDF MODIFICADO: SOLO UN FOLIO CON IMAGEN 👇
+// PDF MODIFICADO: BÚSQUEDA CORREGIDA CON MAYÚSCULAS
 app.get('/api/reporte/pdf', (req, res) => {
-    const folioBuscado = req.query.folio ? req.query.folio.trim() : '';
+    const folioBuscado = req.query.folio ? req.query.folio.trim().toUpperCase() : '';
 
     db.get(`SELECT * FROM constancias WHERE folio = ?`, [folioBuscado], (err, row) => {
         if (err || !row) return res.status(404).send("Folio no encontrado para el reporte");
@@ -132,10 +128,9 @@ app.get('/api/reporte/pdf', (req, res) => {
         res.setHeader('Content-Disposition', `attachment; filename=reporte_${row.folio}.pdf`);
         doc.pipe(res);
 
-        // Agregar Imagen si existe en el servidor
         try {
             doc.image(path.join(__dirname, 'mi_logotipo.png'), {
-                fit: [150, 150],
+                fit:,
                 align: 'center',
                 valign: 'center'
             });
@@ -144,7 +139,6 @@ app.get('/api/reporte/pdf', (req, res) => {
             console.log("No se pudo cargar la imagen en PDF, continuando sin ella.");
         }
 
-        // Título e Información Estructurada del Folio
         doc.fontSize(18).font('Helvetica-Bold').text('DETALLE DE CONSTANCIA', { align: 'center' });
         doc.moveDown(2);
 
@@ -161,7 +155,6 @@ app.get('/api/reporte/pdf', (req, res) => {
     });
 });
 
-// 4. Encender el servidor
 const PUERTO = process.env.PORT || 3000;
 app.listen(PUERTO, () => {
     console.log(`Servidor corriendo en el puerto ${PUERTO}`);
