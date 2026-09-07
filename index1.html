@@ -53,6 +53,15 @@
         .contenedor-botones {
             display: flex;
             gap: 10px;
+            margin-bottom: 15px;
+        }
+        /* Contenedor nuevo para los botones de reportes */
+        .contenedor-reportes {
+            display: flex;
+            gap: 10px;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 15px;
+            margin-top: 15px;
         }
         button {
             flex: 1;
@@ -62,13 +71,14 @@
             border: none;
             border-radius: 8px;
             cursor: pointer;
+            transition: background-color 0.2s;
         }
         .btn-verificar {
             background-color: #4e6d8f !important; 
             color: white;
         }
         .btn-verificar:hover {
-            background-color: #4338ca !important;
+            background-color: #3b5573 !important;
         }
 
         .btn-limpiar {
@@ -78,6 +88,25 @@
         .btn-limpiar:hover {
             background-color: #e2e8f0;
         }
+
+        /* Estilos nuevos para los botones de Excel y PDF */
+        .btn-excel {
+            background-color: #107c41 !important;
+            color: white;
+            font-size: 13px;
+        }
+        .btn-excel:hover {
+            background-color: #0b592e !important;
+        }
+        .btn-pdf {
+            background-color: #b30b00 !important;
+            color: white;
+            font-size: 13px;
+        }
+        .btn-pdf:hover {
+            background-color: #8c0800 !important;
+        }
+
         #mensaje {
             margin-top: 25px;
             padding: 15px;
@@ -101,11 +130,20 @@
             <button class="btn-verificar" onclick="comprobar()">Verificar</button>
             <button class="btn-limpiar" onclick="limpiarPantalla()">Limpiar</button>
         </div>
+
+        <!-- 👇 NUEVA SECCIÓN DE REPORTES 👇 -->
+        <div class="contenedor-reportes">
+            <button class="btn-excel" onclick="descargarExcel()">📊 Descargar Excel</button>
+            <button class="btn-pdf" onclick="descargarPDF()">📄 Descargar PDF</button>
+        </div>
         
         <div id="mensaje"></div>
     </div>
 
     <script>
+        // Dirección de tu servidor en internet
+        const URL_SERVIDOR = "https://sistema-nap-production.up.railway.app";
+
         // 1. Esto detecta la tecla Enter
         document.getElementById("codigoUsuario").addEventListener("keypress", function(event) {
             if (event.key === "Enter") {
@@ -116,7 +154,7 @@
 
         // 2. Esta función le pregunta a tu servidor Node.js
         async function consultarBaseDeDatos(folio) {
-            const MODO_PRUEBAS = false; // ¡Desactivado para usar el servidor real!
+            const MODO_PRUEBAS = false; 
 
             if (MODO_PRUEBAS) {
                 const diccionarioCodigos = {
@@ -126,8 +164,7 @@
                 return diccionarioCodigos[folio] || { valido: false, html: "✗ Código incorrecto o no registrado." };
             } else {
                 try {
-                    // Llama a tu servidor local en el puerto 3000
-                    const respuesta = await fetch(`https://sistema-nap-production.up.railway.app/api/verificar?folio=${folio}`);
+                    const respuesta = await fetch(`${URL_SERVIDOR}/api/verificar?folio=${folio}`);
                     if (!respuesta.ok) throw new Error("Error en el servidor");
                     return await respuesta.json(); 
                 } catch (error) {
@@ -171,6 +208,15 @@
             const cajaMensaje = document.getElementById("mensaje");
             cajaMensaje.innerHTML = "";
             cajaMensaje.style.display = "none";
+        }
+
+        // 👇 NUEVAS FUNCIONES PARA DESCARGAR LOS REPORTES 👇
+        function descargarExcel() {
+            window.location.href = `${URL_SERVIDOR}/api/reporte/excel`;
+        }
+
+        function descargarPDF() {
+            window.location.href = `${URL_SERVIDOR}/api/reporte/pdf`;
         }
     </script>
 
