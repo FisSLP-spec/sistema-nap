@@ -55,7 +55,6 @@
             gap: 10px;
             margin-bottom: 15px;
         }
-        /* Contenedor nuevo para los botones de reportes */
         .contenedor-reportes {
             display: flex;
             gap: 10px;
@@ -89,7 +88,6 @@
             background-color: #e2e8f0;
         }
 
-        /* Estilos nuevos para los botones de Excel y PDF */
         .btn-excel {
             background-color: #107c41 !important;
             color: white;
@@ -131,20 +129,17 @@
             <button class="btn-limpiar" onclick="limpiarPantalla()">Limpiar</button>
         </div>
 
-        <!-- 👇 NUEVA SECCIÓN DE REPORTES 👇 -->
         <div class="contenedor-reportes">
-            <button class="btn-excel" onclick="descargarExcel()">📊 Descargar Excel</button>
-            <button class="btn-pdf" onclick="descargarPDF()">📄 Descargar PDF</button>
+            <button class="btn-excel" onclick="descargarExcel()">📊 Guardar Folio Excel</button>
+            <button class="btn-pdf" onclick="descargarPDF()">📄 Guardar Folio PDF</button>
         </div>
         
         <div id="mensaje"></div>
     </div>
 
     <script>
-        // Dirección de tu servidor en internet
-        const URL_SERVIDOR = "https://sistema-nap-production.up.railway.app";
+        const URL_SERVIDOR = "https://railway.app";
 
-        // 1. Esto detecta la tecla Enter
         document.getElementById("codigoUsuario").addEventListener("keypress", function(event) {
             if (event.key === "Enter") {
                 event.preventDefault(); 
@@ -152,24 +147,13 @@
             }
         });
 
-        // 2. Esta función le pregunta a tu servidor Node.js
         async function consultarBaseDeDatos(folio) {
-            const MODO_PRUEBAS = false; 
-
-            if (MODO_PRUEBAS) {
-                const diccionarioCodigos = {
-                    "53901519": { valido: true, html: "✓ VÁLIDO<br><b>Usuario:</b> SIN ANTECEDENTES<br><b>ID:</b> supervisor ejecutivo" },
-                    "FOLIO102": { valido: true, html: "✓ VÁLIDO<br><b>Usuario:</b> María Gómez<br><b>Estado:</b> En Revisión" }
-                };
-                return diccionarioCodigos[folio] || { valido: false, html: "✗ Código incorrecto o no registrado." };
-            } else {
-                try {
-                    const respuesta = await fetch(`${URL_SERVIDOR}/api/verificar?folio=${folio}`);
-                    if (!respuesta.ok) throw new Error("Error en el servidor");
-                    return await respuesta.json(); 
-                } catch (error) {
-                    return { valido: false, html: "✗ Error de conexión con el servidor. ¿Está encendido?" };
-                }
+            try {
+                const respuesta = await fetch(`${URL_SERVIDOR}/api/verificar?folio=${folio}`);
+                if (!respuesta.ok) throw new Error("Error en el servidor");
+                return await respuesta.json(); 
+            } catch (error) {
+                return { valido: false, html: "✗ Error de conexión con el servidor. ¿Está encendido?" };
             }
         }
 
@@ -210,13 +194,23 @@
             cajaMensaje.style.display = "none";
         }
 
-        // 👇 NUEVAS FUNCIONES PARA DESCARGAR LOS REPORTES 👇
+        // 👇 NUEVAS FUNCIONES: MANDAN EL FOLIO ESCRITO AL SERVIDOR 👇
         function descargarExcel() {
-            window.location.href = `${URL_SERVIDOR}/api/reporte/excel`;
+            const folio = document.getElementById("codigoUsuario").value.trim();
+            if(folio === "") {
+                alert("Por favor, escribe un folio antes de descargar el reporte.");
+                return;
+            }
+            window.location.href = `${URL_SERVIDOR}/api/reporte/excel?folio=${folio}`;
         }
 
         function descargarPDF() {
-            window.location.href = `${URL_SERVIDOR}/api/reporte/pdf`;
+            const folio = document.getElementById("codigoUsuario").value.trim();
+            if(folio === "") {
+                alert("Por favor, escribe un folio antes de descargar el reporte.");
+                return;
+            }
+            window.location.href = `${URL_SERVIDOR}/api/reporte/pdf?folio=${folio}`;
         }
     </script>
 
