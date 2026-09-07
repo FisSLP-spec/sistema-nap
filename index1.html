@@ -130,8 +130,8 @@
         </div>
 
         <div class="contenedor-reportes">
-            <button class="btn-excel" onclick="descargarExcel()">📊 Guardar Folio Excel</button>
-            <button class="btn-pdf" onclick="descargarPDF()">📄 Guardar Folio PDF</button>
+            <button class="btn-excel" onclick="descargarExcel()">📊 Descargar Excel</button>
+            <button class="btn-pdf" onclick="descargarPDF()">📄 Descargar PDF</button>
         </div>
         
         <div id="mensaje"></div>
@@ -194,7 +194,6 @@
             cajaMensaje.style.display = "none";
         }
 
-        // 👇 NUEVAS FUNCIONES: MANDAN EL FOLIO ESCRITO AL SERVIDOR 👇
         function descargarExcel() {
             const folio = document.getElementById("codigoUsuario").value.trim();
             if(folio === "") {
