@@ -2,12 +2,15 @@ const express = require('express');
 const cors = require('cors');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
+// 👇 Nuevas herramientas para reportes 👇
+const ExcelJS = require('exceljs');
+const PDFDocument = require('pdfkit');
 
 const app = express();
-app.use(cors()); // Permite que tu HTML consulte al servidor
+app.use(cors()); 
 app.use(express.json());
 
-// 1. Crear o conectar la Base de Datos en un archivo local llamado 'datos.db'
+// 1. Crear o conectar la Base de Datos
 const db = new sqlite3.Database('./datos.db', (err) => {
     if (err) return console.error(err.message);
     console.log('Conectado a la base de datos SQLite.');
@@ -23,7 +26,6 @@ db.serialize(() => {
 
     const stmt = db.prepare(`INSERT OR IGNORE INTO constancias (folio, usuario, estado) VALUES (?, ?, ?)`);
     
-    // 👇 TODOS LOS FOLIOS AHORA SON PURAMENTE NUMÉRICOS 👇
     stmt.run("53901519", "SIN ANTECEDENTES De la Rosa Mendez Eric Alejandro", "Vigencia: 07/10/2026");
     stmt.run("53901520", "SIN ANTECEDENTES Hernández Contreras Edith", "Vigencia: 07/10/2026");
     stmt.run("53901524", "SIN ANTECEDENTES Llamas Portillo Miguel Angel", "Vigencia 07/10/2026");
@@ -44,11 +46,15 @@ db.serialize(() => {
 
     stmt.finalize();
 });
+
 app.use(express.static(path.join(__dirname))); 
-app.get('/', (req, res) => { res.sendFile(path.join(__dirname, 'index1.html')); });
-// 3. Crear la ruta (API) para verificar los folios
-app.get('/api/verificar', (req, res) => {res.sendFile(path.join(__dirname, 'index1.html')); 
-    // .trim() limpia espacios en blanco si el usuario los escribe por error
+
+app.get('/', (req, res) => { 
+    res.sendFile(path.join(__dirname, 'index.html')); 
+});
+
+// 3. Crear la ruta para verificar los folios
+app.get('/api/verificar', (req, res) => {
     const folioBuscado = req.query.folio ? req.query.folio.trim() : '';
 
     db.get(`SELECT * FROM constancias WHERE folio = ?`, [folioBuscado], (err, row) => {
@@ -70,7 +76,60 @@ app.get('/api/verificar', (req, res) => {res.sendFile(path.join(__dirname, 'inde
     });
 });
 
-// 4. Encender el servidor (Modificado para Internet)
+// 👇 NUEVA RUTA: DESCARGAR EXCEL 👇
+app.get('/api/reporte/excel', (req, res) => {
+    db.all(`SELECT * FROM constancias`, [], async (err, rows) => {
+        if (err) return res.status(500).send("Error al obtener datos");
+
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('Constancias');
+
+        worksheet.columns = [
+            { header: 'Folio', key: 'folio', width: 15 },
+            { header: 'Usuario / Nombre', key: 'usuario', width: 50 },
+            { header: 'Estado / Vigencia', key: 'estado', width: 30 }
+        ];
+
+        worksheet.addRows(rows);
+
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', 'attachment; filename=reporte_constancias.xlsx');
+
+        await workbook.xlsx.write(res);
+        res.end();
+    });
+});
+
+// 👇 NUEVA RUTA: DESCARGAR PDF 👇
+app.get('/api/reporte/pdf', (req, res) => {
+    db.all(`SELECT * FROM constancias`, [], (err, rows) => {
+        if (err) return res.status(500).send("Error al obtener datos");
+
+        const doc = new PDFDocument({ margin: 50 });
+        
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', 'attachment; filename=reporte_constancias.pdf');
+        doc.pipe(res);
+
+        // Título del PDF
+        doc.fontSize(20).text('REPORTE GENERAL DE CONSTANCIAS', { align: 'center' });
+        doc.moveDown(2);
+
+        // Listar los registros
+        rows.forEach((row) => {
+            doc.fontSize(12).font('Helvetica-Bold').text(`Folio: ${row.folio}`);
+            doc.font('Helvetica').text(`Usuario: ${row.usuario}`);
+            doc.text(`Estado: ${row.estado}`);
+            doc.moveDown(1);
+            doc.text('-----------------------------------------------------------------------');
+            doc.moveDown(1);
+        });
+
+        doc.end();
+    });
+});
+
+// 4. Encender el servidor
 const PUERTO = process.env.PORT || 3000;
 app.listen(PUERTO, () => {
     console.log(`Servidor corriendo en el puerto ${PUERTO}`);
