@@ -75,7 +75,7 @@ app.get('/api/verificar', (req, res) => {
     });
 });
 
-// EXCEL INDIVIDUAL CORREGIDO PARA COMPARAR COMO TEXTO O NÚMERO
+// EXCEL INDIVIDUAL
 app.get('/api/reporte/excel', (req, res) => {
     const folioBuscado = req.query.folio ? req.query.folio.trim().toUpperCase() : '';
 
@@ -115,7 +115,7 @@ app.get('/api/reporte/excel', (req, res) => {
     });
 });
 
-// PDF INDIVIDUAL CORREGIDO PARA COMPARAR COMO TEXTO O NÚMERO
+// PDF INDIVIDUAL (Código corregido sin errores de sintaxis)
 app.get('/api/reporte/pdf', (req, res) => {
     const folioBuscado = req.query.folio ? req.query.folio.trim().toUpperCase() : '';
 
@@ -129,7 +129,7 @@ app.get('/api/reporte/pdf', (req, res) => {
         doc.pipe(res);
 
         try {
-            doc.image(path.join(__dirname, 'mi_logotipo.png'), { width: 180, align: 'center' });
+            doc.image(path.join(__dirname, 'mi_logotipo.png'), { width: 180 });
             doc.moveDown(2);
         } catch (e) {
             console.log("No se pudo cargar la imagen en PDF.");
