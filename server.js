@@ -58,7 +58,7 @@ app.get('/', (req, res) => {
 app.get('/api/verificar', (req, res) => {
     const folioBuscado = req.query.folio ? req.query.folio.trim().toUpperCase() : '';
 
-    db.get Atlantic = `SELECT * FROM constancias WHERE folio = ? OR CAST(folio AS TEXT) = ?`, [folioBuscado, folioBuscado], (err, row) => {
+    db.get(`SELECT * FROM constancias WHERE folio = ? OR CAST(folio AS TEXT) = ?`, [folioBuscado, folioBuscado], (err, row) => {
         if (err) {
             return res.status(500).json({ valido: false, html: "✗ Error en la base de datos." });
         }
@@ -153,7 +153,6 @@ app.get('/api/reporte/pdf', (req, res) => {
     });
 });
 
-// 👇 EL PUERTO QUEDÓ ALINEADO PERFECTAMENTE EN 8080 CON RAILWAY 👇
 const PUERTO = process.env.PORT || 8080;
 app.listen(PUERTO, () => {
     console.log(`Servidor corriendo en el puerto ${PUERTO}`);
