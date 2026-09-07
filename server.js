@@ -75,7 +75,7 @@ app.get('/api/verificar', (req, res) => {
     });
 });
 
-// EXCEL MODIFICADO: BÚSQUEDA CORREGIDA CON MAYÚSCULAS
+// EXCEL INDIVIDUAL CON LOGOTIPO
 app.get('/api/reporte/excel', (req, res) => {
     const folioBuscado = req.query.folio ? req.query.folio.trim().toUpperCase() : '';
 
@@ -92,7 +92,7 @@ app.get('/api/reporte/excel', (req, res) => {
             });
             worksheet.addImage(imageId, 'B2:D4'); 
         } catch (e) {
-            console.log("No se pudo cargar la imagen en Excel, continuando sin ella.");
+            console.log("No se pudo cargar la imagen en Excel.");
         }
 
         worksheet.getCell('B6').value = 'REPORTE DE CONSTANCIA INDIVIDUAL';
@@ -115,7 +115,7 @@ app.get('/api/reporte/excel', (req, res) => {
     });
 });
 
-// PDF MODIFICADO: BÚSQUEDA CORREGIDA CON MAYÚSCULAS
+// PDF INDIVIDUAL CON LOGOTIPO
 app.get('/api/reporte/pdf', (req, res) => {
     const folioBuscado = req.query.folio ? req.query.folio.trim().toUpperCase() : '';
 
@@ -129,14 +129,11 @@ app.get('/api/reporte/pdf', (req, res) => {
         doc.pipe(res);
 
         try {
-            doc.image(path.join(__dirname, 'mi_logotipo.png'), {
-                fit:,
-                align: 'center',
-                valign: 'center'
-            });
-            doc.moveDown(4);
+            // Se dibuja la imagen de manera directa con un ancho fijo de 180 píxeles
+            doc.image(path.join(__dirname, 'mi_logotipo.png'), { width: 180, align: 'center' });
+            doc.moveDown(2);
         } catch (e) {
-            console.log("No se pudo cargar la imagen en PDF, continuando sin ella.");
+            console.log("No se pudo cargar la imagen en PDF.");
         }
 
         doc.fontSize(18).font('Helvetica-Bold').text('DETALLE DE CONSTANCIA', { align: 'center' });
