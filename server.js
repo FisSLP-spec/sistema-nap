@@ -56,7 +56,7 @@ app.get('/', (req, res) => {
 app.get('/api/verificar', (req, res) => {
     const folioBuscado = req.query.folio ? req.query.folio.trim().toUpperCase() : '';
 
-    db.get(`SELECT * FROM constancias WHERE folio = ?`, [folioBuscado], (err, row) => {
+    db.get(`SELECT * FROM constancias WHERE folio = ? OR CAST(folio AS TEXT) = ?`, [folioBuscado, folioBuscado], (err, row) => {
         if (err) {
             return res.status(500).json({ valido: false, html: "✗ Error en la base de datos." });
         }
@@ -75,11 +75,11 @@ app.get('/api/verificar', (req, res) => {
     });
 });
 
-// EXCEL INDIVIDUAL CON LOGOTIPO
+// EXCEL INDIVIDUAL CORREGIDO PARA COMPARAR COMO TEXTO O NÚMERO
 app.get('/api/reporte/excel', (req, res) => {
     const folioBuscado = req.query.folio ? req.query.folio.trim().toUpperCase() : '';
 
-    db.get(`SELECT * FROM constancias WHERE folio = ?`, [folioBuscado], async (err, row) => {
+    db.get(`SELECT * FROM constancias WHERE folio = ? OR CAST(folio AS TEXT) = ?`, [folioBuscado, folioBuscado], async (err, row) => {
         if (err || !row) return res.status(404).send("Folio no encontrado para el reporte");
 
         const workbook = new ExcelJS.Workbook();
@@ -115,11 +115,11 @@ app.get('/api/reporte/excel', (req, res) => {
     });
 });
 
-// PDF INDIVIDUAL CON LOGOTIPO
+// PDF INDIVIDUAL CORREGIDO PARA COMPARAR COMO TEXTO O NÚMERO
 app.get('/api/reporte/pdf', (req, res) => {
     const folioBuscado = req.query.folio ? req.query.folio.trim().toUpperCase() : '';
 
-    db.get(`SELECT * FROM constancias WHERE folio = ?`, [folioBuscado], (err, row) => {
+    db.get(`SELECT * FROM constancias WHERE folio = ? OR CAST(folio AS TEXT) = ?`, [folioBuscado, folioBuscado], (err, row) => {
         if (err || !row) return res.status(404).send("Folio no encontrado para el reporte");
 
         const doc = new PDFDocument({ margin: 50 });
@@ -129,7 +129,6 @@ app.get('/api/reporte/pdf', (req, res) => {
         doc.pipe(res);
 
         try {
-            // Se dibuja la imagen de manera directa con un ancho fijo de 180 píxeles
             doc.image(path.join(__dirname, 'mi_logotipo.png'), { width: 180, align: 'center' });
             doc.moveDown(2);
         } catch (e) {
