@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const sqlite3 = require('sqlite3').verbose();
+const path = require('path');
 
 const app = express();
 app.use(cors()); // Permite que tu HTML consulte al servidor
@@ -45,7 +46,7 @@ db.serialize(() => {
 });
 
 // 3. Crear la ruta (API) para verificar los folios
-app.get('/api/verificar', (req, res) => {
+app.get('/api/verificar', (req, res) => {res.sendFile(path.join(__dirname, 'index1.html')); 
     // .trim() limpia espacios en blanco si el usuario los escribe por error
     const folioBuscado = req.query.folio ? req.query.folio.trim() : '';
 

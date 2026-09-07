@@ -127,7 +127,7 @@
             } else {
                 try {
                     // Llama a tu servidor local en el puerto 3000
-                    const respuesta = await fetch(`https://sistema-nap-production.up.railway.app/api/verificar?folio=${folio}`);
+                    const respuesta = await fetch(`https://api/verificar?folio=${folio}`);
                     if (!respuesta.ok) throw new Error("Error en el servidor");
                     return await respuesta.json(); 
                 } catch (error) {
