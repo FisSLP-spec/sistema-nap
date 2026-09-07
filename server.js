@@ -44,7 +44,8 @@ db.serialize(() => {
 
     stmt.finalize();
 });
-
+app.use(express.static(path.join(__dirname))); 
+app.get('/', (req, res) => { res.sendFile(path.join(__dirname, 'index.html')); });
 // 3. Crear la ruta (API) para verificar los folios
 app.get('/api/verificar', (req, res) => {res.sendFile(path.join(__dirname, 'index1.html')); 
     // .trim() limpia espacios en blanco si el usuario los escribe por error
