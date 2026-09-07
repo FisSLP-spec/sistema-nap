@@ -9,21 +9,23 @@ const app = express();
 app.use(cors()); 
 app.use(express.json());
 
-// 1. Crear o conectar la Base de Datos
+// 1. Conectar la Base de Datos
 const db = new sqlite3.Database('./datos.db', (err) => {
     if (err) return console.error(err.message);
     console.log('Conectado a la base de datos SQLite.');
 });
 
-// 2. Crear la tabla de folios si no existe e insertar datos de prueba
+// 2. Limpiar y recrear la tabla con los datos frescos automáticamente
 db.serialize(() => {
+    db.run(`DROP TABLE IF EXISTS constancias`);
+
     db.run(`CREATE TABLE IF NOT EXISTS constancias (
         folio TEXT PRIMARY KEY,
         usuario TEXT,
         estado TEXT
     )`);
 
-    const stmt = db.prepare(`INSERT OR IGNORE INTO constancias (folio, usuario, estado) VALUES (?, ?, ?)`);
+    const stmt = db.prepare(`INSERT OR REPLACE INTO constancias (folio, usuario, estado) VALUES (?, ?, ?)`);
     
     stmt.run("53901519", "SIN ANTECEDENTES De la Rosa Mendez Eric Alejandro", "Vigencia: 07/10/2026");
     stmt.run("53901520", "SIN ANTECEDENTES Hernández Contreras Edith", "Vigencia: 07/10/2026");
@@ -52,11 +54,11 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index1.html')); 
 });
 
-// 3. Crear la ruta para verificar los folios
+// 3. Ruta para verificar los folios
 app.get('/api/verificar', (req, res) => {
     const folioBuscado = req.query.folio ? req.query.folio.trim().toUpperCase() : '';
 
-    db.get(`SELECT * FROM constancias WHERE folio = ? OR CAST(folio AS TEXT) = ?`, [folioBuscado, folioBuscado], (err, row) => {
+    db.get Atlantic = `SELECT * FROM constancias WHERE folio = ? OR CAST(folio AS TEXT) = ?`, [folioBuscado, folioBuscado], (err, row) => {
         if (err) {
             return res.status(500).json({ valido: false, html: "✗ Error en la base de datos." });
         }
@@ -115,7 +117,7 @@ app.get('/api/reporte/excel', (req, res) => {
     });
 });
 
-// PDF INDIVIDUAL - CORREGIDO COMPLETAMENTE SIN COMA SUELTA
+// PDF INDIVIDUAL
 app.get('/api/reporte/pdf', (req, res) => {
     const folioBuscado = req.query.folio ? req.query.folio.trim().toUpperCase() : '';
 
@@ -129,7 +131,6 @@ app.get('/api/reporte/pdf', (req, res) => {
         doc.pipe(res);
 
         try {
-            // Dibujamos la imagen de forma directa y segura usando solo el ancho
             doc.image(path.join(__dirname, 'mi_logotipo.png'), { width: 180 });
             doc.moveDown(2);
         } catch (e) {
@@ -152,7 +153,8 @@ app.get('/api/reporte/pdf', (req, res) => {
     });
 });
 
-const PUERTO = process.env.PORT || 3000;
+// 👇 EL PUERTO QUEDÓ ALINEADO PERFECTAMENTE EN 8080 CON RAILWAY 👇
+const PUERTO = process.env.PORT || 8080;
 app.listen(PUERTO, () => {
     console.log(`Servidor corriendo en el puerto ${PUERTO}`);
 });
