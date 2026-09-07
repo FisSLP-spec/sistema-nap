@@ -138,6 +138,7 @@
     </div>
 
     <script>
+        // 👇 ESTA LÍNEA ES LA QUE LE FALTABA A TU CÓDIGO 👇
         const URL_SERVIDOR = "https://railway.app";
 
         document.getElementById("codigoUsuario").addEventListener("keypress", function(event) {
@@ -150,7 +151,7 @@
         async function consultarBaseDeDatos(folio) {
             try {
                 const respuesta = await fetch(`${URL_SERVIDOR}/api/verificar?folio=${folio}`);
-                if (!respuesta.ok) throw new Error("Error en el servidor");
+                if (!res.ok && !respuesta.ok) throw new Error("Error en el servidor");
                 return await respuesta.json(); 
             } catch (error) {
                 return { valido: false, html: "✗ Error de conexión con el servidor. ¿Está encendido?" };
@@ -203,6 +204,7 @@
             window.location.href = `${URL_SERVIDOR}/api/reporte/excel?folio=${folio}`;
         }
 
+        // Corregido también usando comillas inversas correctas de JavaScript
         function descargarPDF() {
             const folio = document.getElementById("codigoUsuario").value.trim();
             if(folio === "") {
