@@ -135,7 +135,7 @@ app.get('/api/reporte/pdf', (req, res) => {
         // Agregar Imagen si existe en el servidor
         try {
             doc.image(path.join(__dirname, 'mi_logotipo.png'), {
-                fit:,
+                fit: [150, 150],
                 align: 'center',
                 valign: 'center'
             });
