@@ -49,7 +49,7 @@ db.serialize(() => {
 app.use(express.static(path.join(__dirname))); 
 
 app.get('/', (req, res) => { 
-    res.sendFile(path.join(__dirname, 'index.html')); 
+    res.sendFile(path.join(__dirname, 'index1.html')); 
 });
 
 // 3. Crear la ruta para verificar los folios
