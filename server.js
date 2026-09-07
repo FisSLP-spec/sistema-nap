@@ -2,7 +2,6 @@ const express = require('express');
 const cors = require('cors');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
-// 👇 Nuevas herramientas para reportes 👇
 const ExcelJS = require('exceljs');
 const PDFDocument = require('pdfkit');
 
@@ -76,54 +75,87 @@ app.get('/api/verificar', (req, res) => {
     });
 });
 
-// 👇 NUEVA RUTA: DESCARGAR EXCEL 👇
+// 👇 EXCEL MODIFICADO: SOLO UN FOLIO CON IMAGEN 👇
 app.get('/api/reporte/excel', (req, res) => {
-    db.all(`SELECT * FROM constancias`, [], async (err, rows) => {
-        if (err) return res.status(500).send("Error al obtener datos");
+    const folioBuscado = req.query.folio ? req.query.folio.trim() : '';
+
+    db.get(`SELECT * FROM constancias WHERE folio = ?`, [folioBuscado], async (err, row) => {
+        if (err || !row) return res.status(404).send("Folio no encontrado para el reporte");
 
         const workbook = new ExcelJS.Workbook();
-        const worksheet = workbook.addWorksheet('Constancias');
+        const worksheet = workbook.addWorksheet('Constancia');
 
+        // Agregar Imagen si existe en el servidor
+        try {
+            const imageId = workbook.addImage({
+                filename: path.join(__dirname, 'mi_logotipo.png'),
+                extension: 'png',
+            });
+            worksheet.addImage(imageId, 'B2:D4'); // Posición de la imagen
+        } catch (e) {
+            console.log("No se pudo cargar la imagen en Excel, continuando sin ella.");
+        }
+
+        // Espacio para la imagen y el título
+        worksheet.getCell('B6').value = 'REPORTE DE CONSTANCIA INDIVIDUAL';
+        worksheet.getCell('B6').font = { bold: true, size: 14 };
+
+        // Estructura de la tabla de datos
         worksheet.columns = [
+            { header: '', key: 'vacio', width: 5 },
             { header: 'Folio', key: 'folio', width: 15 },
             { header: 'Usuario / Nombre', key: 'usuario', width: 50 },
             { header: 'Estado / Vigencia', key: 'estado', width: 30 }
         ];
 
-        worksheet.addRows(rows);
+        // Añadir la fila con los datos del folio buscado
+        worksheet.addRow({ folio: row.folio, usuario: row.usuario, estado: row.estado });
 
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        res.setHeader('Content-Disposition', 'attachment; filename=reporte_constancias.xlsx');
+        res.setHeader('Content-Disposition', `attachment; filename=reporte_${row.folio}.xlsx`);
 
         await workbook.xlsx.write(res);
         res.end();
     });
 });
 
-// 👇 NUEVA RUTA: DESCARGAR PDF 👇
+// 👇 PDF MODIFICADO: SOLO UN FOLIO CON IMAGEN 👇
 app.get('/api/reporte/pdf', (req, res) => {
-    db.all(`SELECT * FROM constancias`, [], (err, rows) => {
-        if (err) return res.status(500).send("Error al obtener datos");
+    const folioBuscado = req.query.folio ? req.query.folio.trim() : '';
+
+    db.get(`SELECT * FROM constancias WHERE folio = ?`, [folioBuscado], (err, row) => {
+        if (err || !row) return res.status(404).send("Folio no encontrado para el reporte");
 
         const doc = new PDFDocument({ margin: 50 });
         
         res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', 'attachment; filename=reporte_constancias.pdf');
+        res.setHeader('Content-Disposition', `attachment; filename=reporte_${row.folio}.pdf`);
         doc.pipe(res);
 
-        // Título del PDF
-        doc.fontSize(20).text('REPORTE GENERAL DE CONSTANCIAS', { align: 'center' });
+        // Agregar Imagen si existe en el servidor
+        try {
+            doc.image(path.join(__dirname, 'mi_logotipo.png'), {
+                fit:,
+                align: 'center',
+                valign: 'center'
+            });
+            doc.moveDown(4);
+        } catch (e) {
+            console.log("No se pudo cargar la imagen en PDF, continuando sin ella.");
+        }
+
+        // Título e Información Estructurada del Folio
+        doc.fontSize(18).font('Helvetica-Bold').text('DETALLE DE CONSTANCIA', { align: 'center' });
         doc.moveDown(2);
 
-        // Listar los registros
-        rows.forEach((row) => {
-            doc.fontSize(12).font('Helvetica-Bold').text(`Folio: ${row.folio}`);
-            doc.font('Helvetica').text(`Usuario: ${row.usuario}`);
-            doc.text(`Estado: ${row.estado}`);
-            doc.moveDown(1);
-            doc.text('-----------------------------------------------------------------------');
-            doc.moveDown(1);
-        });
+        doc.fontSize(12).font('Helvetica-Bold').text(`Número de Folio: `, { continued: true }).font('Helvetica').text(row.folio);
+        doc.moveDown(0.5);
+        doc.font('Helvetica-Bold').text(`Usuario asignado: `, { continued: true }).font('Helvetica').text(row.usuario);
+        doc.moveDown(0.5);
+        doc.font('Helvetica-Bold').text(`Estado actual: `, { continued: true }).font('Helvetica').text(row.estado);
+        
+        doc.moveDown(2);
+        doc.fontSize(10).fillColor('#64748b').text('Este documento es un reporte oficial generado por el sistema.', { align: 'center' });
 
         doc.end();
     });
@@ -134,4 +166,3 @@ const PUERTO = process.env.PORT || 3000;
 app.listen(PUERTO, () => {
     console.log(`Servidor corriendo en el puerto ${PUERTO}`);
 });
-
