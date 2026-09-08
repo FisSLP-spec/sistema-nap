@@ -60,7 +60,7 @@ app.get('/api/verificar', (req, res) => {
 
     db.get(`SELECT * FROM constancias WHERE folio = ? OR CAST(folio AS TEXT) = ?`, [folioBuscado, folioBuscado], (err, row) => {
         if (err) {
-            return res.status(500).json({ valido: false, html: "✗ Error en la base de datos." });
+            return res.status(500).json({ valido: false, html: "X Error en la base de datos." });
         }
         
         if (row) {
@@ -142,9 +142,9 @@ app.get('/api/reporte/pdf', (req, res) => {
 
         doc.fontSize(12).font('Helvetica-Bold').text(`Número de Folio: `, { continued: true }).font('Helvetica').text(row.folio);
         doc.moveDown(0.5);
-        doc.font('Helvetica-Bold').text(`Usuario asignado: `, { continued: true }).font('Helvetica').text(row.usuario);
+        doc.font('Helvetica-Bold').text('Usuario asignado: ', { continued: true }).font('Helvetica').text(row.usuario);
         doc.moveDown(0.5);
-        doc.font('Helvetica-Bold').text(`Estado actual: `, { continued: true }).font('Helvetica').text(row.estado);
+        doc.font('Helvetica-Bold').text('Estado actual: ', { continued: true }).font('Helvetica').text(row.estado);
         
         doc.moveDown(2);
         doc.fontSize(10).fillColor('#64748b').text('Este documento es un reporte oficial generado por el sistema.', { align: 'center' });
@@ -153,7 +153,7 @@ app.get('/api/reporte/pdf', (req, res) => {
     });
 });
 
-const PUERTO = process.env.PORT || 8080;
-app.listen(PUERTO, () => {
-    console.log(`Servidor corriendo en el puerto ${PUERTO}`);
+// 👇 AQUÍ SE DEFINE EL PUERTO ESTABLECIDO DE ENTRADA DIRECTA PARA RAILWAY 👇
+app.listen(8080, '0.0.0.0', () => {
+    console.log('Servidor corriendo de forma oficial en el puerto 8080');
 });
