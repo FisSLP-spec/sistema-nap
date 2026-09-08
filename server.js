@@ -92,8 +92,11 @@ app.get('/api/reporte/excel', (req, res) => {
                 filename: path.join(__dirname, 'mi_logotipo.png'),
                 extension: 'png',
             });
-            worksheet.addImage(imageId, 'B2:D4'); 
-        } catch (e) {
+            worksheet.addImage(imageId, {
+        tl: { col: 1, row: 1 },
+        ext: { width: 340, height: 75 }
+    });
+} catch (e) {
             console.log("No se pudo cargar la imagen en Excel.");
         }
 
