@@ -44,6 +44,10 @@ db.serialize(() => {
     stmt.run("1014", "Jorge Alberto Morales", "En Revisión");
     stmt.run("1015", "Claudia Verónica Silva", "VÁLIDO");
     stmt.run("1016", "Mauricio Javier Ortega", "VÁLIDO");
+    stmt.run("37206217", "SIN ANTECEDENTES JESUS ALEJANDRO RODRIGUEZ HERNANDEZ", "Vigencia: 23/10/2026");
+    stmt.run("AQUÍ_VA_EL_FOLIO", "SIN ANTECEDENTES Nombre Completo De La Persona", "Vigencia: DD/MM/AAAA");
+
+
 
     stmt.finalize();
 });
